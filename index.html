@@ -269,18 +269,53 @@
             fileInput.value = '';
         });
 
+        // Image preprocessing for better OCR
+        function preprocessImage(file) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    // Scale up for better OCR
+                    const scale = 2;
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    // Apply grayscale and contrast
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+
+                    for (let i = 0; i < data.length; i += 4) {
+                        const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                        // Increase contrast
+                        const contrast = 1.5;
+                        const newVal = Math.min(255, Math.max(0, (gray - 128) * contrast + 128));
+                        data[i] = data[i + 1] = data[i + 2] = newVal;
+                    }
+
+                    ctx.putImageData(imageData, 0, 0);
+
+                    canvas.toBlob(resolve, 'image/png');
+                };
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
         // Function to extract fields from OCR text
         function extractFields(text) {
             const cleanText = text.replace(/\s+/g, ' ');
-            const textClean = cleanText.replace(/[\*\[\]\"\']/g, '');
+            const textClean = cleanText.replace(/[\*\[\]\"\'—\-]/g, '');
 
-            // Pattern 1: Code like 1900A
+            // Pattern 1: Code like 1900A (digits + letter)
             const codes = textClean.match(/(\d{3,5}[A-Z])/gi) || [];
 
             // Pattern 2: 10-digit number
             const tenDigits = textClean.match(/(\d{10})/g) || [];
 
-            // Pattern 3: Codice Fiscale
+            // Pattern 3: Codice Fiscale (flexible)
             const cf = textClean.match(/([A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z])/gi) || [];
 
             return {
@@ -295,11 +330,16 @@
 
             loading.classList.add('active');
             processBtn.disabled = true;
-            progressText.textContent = 'Initializing OCR...';
+            progressText.textContent = 'Preprocessing image...';
 
             try {
+                // Preprocess image for better OCR
+                const processedImage = await preprocessImage(currentImage);
+
+                progressText.textContent = 'Running OCR...';
+
                 const result = await Tesseract.recognize(
-                    currentImage,
+                    processedImage,
                     'eng',
                     {
                         logger: m => {
