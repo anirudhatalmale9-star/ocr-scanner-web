@@ -338,6 +338,43 @@
             });
         }
 
+        // Function to extract fields from OCR text
+        function extractFields(text) {
+            // Clean up OCR text - normalize whitespace
+            const cleanText = text.replace(/\s+/g, ' ');
+
+            // Remove asterisks and special chars for pattern matching
+            const textClean = cleanText.replace(/[\*\[\]]/g, '');
+
+            // Pattern 1: Code like 1900A (3-5 digits followed by letter)
+            const codePattern = /(\d{3,5}[A-Z])/gi;
+            const codes = textClean.match(codePattern) || [];
+
+            // Pattern 2: 10-digit number
+            const tenDigitPattern = /(\d{10})/g;
+            const tenDigits = textClean.match(tenDigitPattern) || [];
+
+            // Pattern 3: Codice Fiscale (16 alphanumeric)
+            // Format: 6 letters + 2 digits + 1 letter + 2 digits + 1 letter + 3 digits + 1 letter
+            const cfPattern = /([A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z])/gi;
+            const codiceFiscale = textClean.match(cfPattern) || [];
+
+            // Try flexible CF pattern
+            let cf = codiceFiscale[0] || '';
+            if (!cf) {
+                const flexCfPattern = /([A-Z0-9]{16})/gi;
+                const flexCf = textClean.match(flexCfPattern) || [];
+                cf = flexCf.find(s => /^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/i.test(s)) || '';
+            }
+
+            return {
+                field1: codes[0] ? codes[0].toUpperCase() : '',
+                field2: tenDigits[0] || '',
+                field3: cf ? cf.toUpperCase() : '',
+                hasResults: codes.length > 0 || tenDigits.length > 0 || cf
+            };
+        }
+
         processBtn.addEventListener('click', async () => {
             if (!imageData) return;
 
@@ -345,13 +382,12 @@
             processBtn.disabled = true;
 
             try {
-                // Preprocess image for better OCR
-                progressText.textContent = 'Preprocessing image...';
-                const processedImage = await preprocessImage(imageData);
+                // First try without preprocessing
+                progressText.textContent = 'Running OCR...';
 
-                const result = await Tesseract.recognize(
-                    processedImage,
-                    'ita+eng',
+                let result = await Tesseract.recognize(
+                    imageData,
+                    'eng',
                     {
                         logger: m => {
                             if (m.status === 'recognizing text') {
@@ -364,49 +400,42 @@
                     }
                 );
 
-                const text = result.data.text;
+                let text = result.data.text;
+                let fields = extractFields(text);
 
-                // Clean up OCR text - normalize whitespace
-                const cleanText = text.replace(/\s+/g, ' ');
+                // If no results, try with preprocessed image
+                if (!fields.hasResults) {
+                    progressText.textContent = 'Trying enhanced mode...';
+                    const processedImage = await preprocessImage(imageData);
 
-                // Remove asterisks and clean for pattern matching
-                const textNoAsterisks = cleanText.replace(/\*/g, '');
+                    result = await Tesseract.recognize(
+                        processedImage,
+                        'eng',
+                        {
+                            logger: m => {
+                                if (m.status === 'recognizing text') {
+                                    const percent = Math.round(m.progress * 100);
+                                    progressText.textContent = `Enhanced... ${percent}%`;
+                                }
+                            }
+                        }
+                    );
 
-                // Pattern 1: Code like 1900A (3-5 digits followed by letter)
-                // Looking for patterns like *1900A* in the ricetta
-                const codePattern = /\b(\d{3,5}[A-Z])\b/gi;
-                const codes = textNoAsterisks.match(codePattern) || [];
-
-                // Pattern 2: 10-digit number (like *4921049380*)
-                const tenDigitPattern = /\b(\d{10})\b/g;
-                const tenDigits = textNoAsterisks.match(tenDigitPattern) || [];
-
-                // Pattern 3: Codice Fiscale (16 alphanumeric - like *CCCDVD79M11B428A*)
-                // Format: 6 letters + 2 digits + 1 letter + 2 digits + 1 letter + 3 digits + 1 letter
-                const cfPattern = /\b([A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z])\b/gi;
-                const codiceFiscale = textNoAsterisks.match(cfPattern) || [];
-
-                // Also try a more flexible CF pattern in case OCR makes minor errors
-                let cf = codiceFiscale[0] || '';
-                if (!cf) {
-                    // Try matching any 16 character alphanumeric string
-                    const flexCfPattern = /\b([A-Z0-9]{16})\b/gi;
-                    const flexCf = textNoAsterisks.match(flexCfPattern) || [];
-                    cf = flexCf.find(s => /^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/i.test(s)) || flexCf[0] || '';
+                    text = result.data.text;
+                    fields = extractFields(text);
                 }
 
-                // Populate fields with extracted patterns
-                document.getElementById('field1').value = codes[0] ? codes[0].toUpperCase() : '';
-                document.getElementById('field2').value = tenDigits[0] || '';
-                document.getElementById('field3').value = cf ? cf.toUpperCase() : '';
-
-                // Show full text
+                // Populate fields
+                document.getElementById('field1').value = fields.field1;
+                document.getElementById('field2').value = fields.field2;
+                document.getElementById('field3').value = fields.field3;
                 document.getElementById('fullText').value = text;
 
                 results.style.display = 'block';
 
             } catch (error) {
-                alert('Error processing image: ' + error.message);
+                alert('Error: ' + error.message);
+                console.error(error);
             } finally {
                 loading.classList.remove('active');
                 processBtn.disabled = false;
