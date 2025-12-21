@@ -324,25 +324,39 @@
 
                 const text = result.data.text;
 
-                // Clean up OCR text - remove spaces and normalize
+                // Clean up OCR text - normalize whitespace
                 const cleanText = text.replace(/\s+/g, ' ');
 
-                // Pattern 1: Code like 1900A (digits followed by letter, or letter followed by digits)
-                const codePattern = /\b(\d{3,5}[A-Z]|[A-Z]\d{3,5})\b/gi;
-                const codes = cleanText.match(codePattern) || [];
+                // Remove asterisks and clean for pattern matching
+                const textNoAsterisks = cleanText.replace(/\*/g, '');
 
-                // Pattern 2: 10-digit number
+                // Pattern 1: Code like 1900A (3-5 digits followed by letter)
+                // Looking for patterns like *1900A* in the ricetta
+                const codePattern = /\b(\d{3,5}[A-Z])\b/gi;
+                const codes = textNoAsterisks.match(codePattern) || [];
+
+                // Pattern 2: 10-digit number (like *4921049380*)
                 const tenDigitPattern = /\b(\d{10})\b/g;
-                const tenDigits = cleanText.match(tenDigitPattern) || [];
+                const tenDigits = textNoAsterisks.match(tenDigitPattern) || [];
 
-                // Pattern 3: Codice Fiscale (16 alphanumeric characters)
+                // Pattern 3: Codice Fiscale (16 alphanumeric - like *CCCDVD79M11B428A*)
+                // Format: 6 letters + 2 digits + 1 letter + 2 digits + 1 letter + 3 digits + 1 letter
                 const cfPattern = /\b([A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z])\b/gi;
-                const codiceFiscale = cleanText.match(cfPattern) || [];
+                const codiceFiscale = textNoAsterisks.match(cfPattern) || [];
+
+                // Also try a more flexible CF pattern in case OCR makes minor errors
+                let cf = codiceFiscale[0] || '';
+                if (!cf) {
+                    // Try matching any 16 character alphanumeric string
+                    const flexCfPattern = /\b([A-Z0-9]{16})\b/gi;
+                    const flexCf = textNoAsterisks.match(flexCfPattern) || [];
+                    cf = flexCf.find(s => /^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/i.test(s)) || flexCf[0] || '';
+                }
 
                 // Populate fields with extracted patterns
                 document.getElementById('field1').value = codes[0] ? codes[0].toUpperCase() : '';
                 document.getElementById('field2').value = tenDigits[0] || '';
-                document.getElementById('field3').value = codiceFiscale[0] ? codiceFiscale[0].toUpperCase() : '';
+                document.getElementById('field3').value = cf ? cf.toUpperCase() : '';
 
                 // Show full text
                 document.getElementById('fullText').value = text;
