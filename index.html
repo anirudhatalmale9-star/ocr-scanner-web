@@ -462,11 +462,13 @@
 
         // Page 1: Take Photo button
         document.getElementById('takePhotoBtn1').addEventListener('click', () => {
+            fileInput.value = '';
             fileInput.click();
         });
 
         // Page 2: Retake Photo button
         document.getElementById('retakeBtn2').addEventListener('click', () => {
+            fileInput.value = '';
             fileInput.click();
         });
 
