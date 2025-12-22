@@ -125,55 +125,51 @@
             width: 100%;
             padding: 16px 20px;
             border: none;
-            border-radius: 30px;
-            font-size: 15px;
+            border-radius: 25px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             margin-bottom: 10px;
-            transition: all 0.3s;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
 
         .btn-green {
-            background: linear-gradient(135deg, #4CAF50 0%, #43a047 100%);
+            background: #5BBE6E;
             color: white;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
         }
 
-        .btn-green:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        .btn-green:active {
+            background: #4aa85c;
         }
 
         .btn-green:disabled {
             background: #ccc;
-            box-shadow: none;
-            transform: none;
         }
 
         .btn-gray {
-            background: #78909c;
+            background: #8E9EAB;
             color: white;
         }
 
-        .btn-gray:hover {
-            background: #607d8b;
+        .btn-gray:active {
+            background: #7a8a97;
         }
 
         .btn-blue {
-            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            background: #4A9FEC;
             color: white;
-            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
         }
 
-        .btn-blue:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        .btn-blue:active {
+            background: #3a8fd8;
         }
 
         /* Page indicator */
@@ -352,7 +348,7 @@
                 <p class="instructions">INQUADRA I 3 CODICI A BARRE<br>E SCATTA UNA FOTO</p>
 
                 <div class="sample-container">
-                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250'%3E%3Crect fill='%23f0f0f0' width='400' height='250'/%3E%3Crect fill='%23fff' x='20' y='20' width='360' height='210' rx='8'/%3E%3Ctext x='200' y='35' text-anchor='middle' font-size='8' fill='%23666'%3ERICETTA ELETTRONICA - PROMEMORIA PER L'ASSISTITO%3C/text%3E%3Crect x='30' y='45' width='120' height='35' fill='%23f5f5f5' stroke='%23e00' stroke-width='2'/%3E%3Crect x='30' y='48' width='120' height='20' fill='%23000'/%3E%3Ctext x='90' y='78' text-anchor='middle' font-size='9' fill='%23333'%3E*010A2*%3C/text%3E%3Crect x='180' y='45' width='120' height='35' fill='%23f5f5f5' stroke='%23e00' stroke-width='2'/%3E%3Crect x='180' y='48' width='120' height='20' fill='%23000'/%3E%3Ctext x='240' y='78' text-anchor='middle' font-size='9' fill='%23333'%3E*4518061015*%3C/text%3E%3Ctext x='40' y='100' font-size='9' fill='%23333'%3EIO ROSSI%3C/text%3E%3Crect x='180' y='90' width='150' height='30' fill='%23f5f5f5' stroke='%23e00' stroke-width='2'/%3E%3Crect x='180' y='92' width='150' height='18' fill='%23000'/%3E%3Ctext x='255' y='118' text-anchor='middle' font-size='8' fill='%23333'%3EMRARSS27H04L219D%3C/text%3E%3Ctext x='40' y='140' font-size='8' fill='%23666'%3ECITTA: TORINO%3C/text%3E%3Ctext x='200' y='140' font-size='8' fill='%23666'%3EPROV: TO%3C/text%3E%3Cline x1='30' y1='150' x2='370' y2='150' stroke='%23e0e0e0'/%3E%3Ctext x='40' y='165' font-size='8' fill='%23666'%3ECODICE ASL: 301%3C/text%3E%3Ctext x='200' y='165' font-size='8' fill='%23666'%3EDISPOSIZIONI REGIONALI:%3C/text%3E%3Ctext x='40' y='180' font-size='8' fill='%23666'%3EPRIORITA PRESCRIZIONE(U,B,D,P):%3C/text%3E%3Ctext x='280' y='180' font-size='8' fill='%23666'%3EProgrammabile%3C/text%3E%3Cline x1='30' y1='190' x2='370' y2='190' stroke='%23e0e0e0'/%3E%3Ctext x='40' y='205' font-size='8' fill='%23666'%3EPRESCRIZIONE%3C/text%3E%3Ctext x='320' y='205' font-size='8' fill='%23666'%3EQTA%3C/text%3E%3Ctext x='360' y='205' font-size='8' fill='%23666'%3EN%3C/text%3E%3C/svg%3E" alt="Esempio Ricetta" class="sample-image" id="sampleImage">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='220' viewBox='0 0 340 220'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23f8f8f8'/%3E%3Cstop offset='100%25' stop-color='%23f0f0f0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23bg)' width='340' height='220' rx='8'/%3E%3Crect fill='white' x='10' y='10' width='320' height='200' rx='4' stroke='%23ddd' stroke-width='1'/%3E%3Ctext x='170' y='28' text-anchor='middle' font-size='7' fill='%23666' font-family='Arial'%3ERICETTA ELETTRONICA - PROMEMORIA PER L'ASSISTITO%3C/text%3E%3Crect x='20' y='38' width='100' height='40' fill='none' stroke='%23e53935' stroke-width='2' rx='2'/%3E%3Cg fill='%23000'%3E%3Crect x='25' y='42' width='2' height='22'/%3E%3Crect x='29' y='42' width='1' height='22'/%3E%3Crect x='32' y='42' width='3' height='22'/%3E%3Crect x='37' y='42' width='1' height='22'/%3E%3Crect x='40' y='42' width='2' height='22'/%3E%3Crect x='44' y='42' width='1' height='22'/%3E%3Crect x='47' y='42' width='3' height='22'/%3E%3Crect x='52' y='42' width='2' height='22'/%3E%3Crect x='56' y='42' width='1' height='22'/%3E%3Crect x='59' y='42' width='2' height='22'/%3E%3Crect x='63' y='42' width='3' height='22'/%3E%3Crect x='68' y='42' width='1' height='22'/%3E%3Crect x='71' y='42' width='2' height='22'/%3E%3Crect x='75' y='42' width='1' height='22'/%3E%3Crect x='78' y='42' width='3' height='22'/%3E%3Crect x='83' y='42' width='2' height='22'/%3E%3Crect x='87' y='42' width='1' height='22'/%3E%3Crect x='90' y='42' width='2' height='22'/%3E%3Crect x='94' y='42' width='3' height='22'/%3E%3Crect x='99' y='42' width='1' height='22'/%3E%3Crect x='102' y='42' width='2' height='22'/%3E%3Crect x='106' y='42' width='1' height='22'/%3E%3Crect x='109' y='42' width='3' height='22'/%3E%3Crect x='114' y='42' width='2' height='22'/%3E%3C/g%3E%3Ctext x='70' y='72' text-anchor='middle' font-size='8' fill='%23333' font-family='Arial'%3E*010A2*%3C/text%3E%3Crect x='140' y='38' width='120' height='40' fill='none' stroke='%23e53935' stroke-width='2' rx='2'/%3E%3Cg fill='%23000'%3E%3Crect x='145' y='42' width='2' height='22'/%3E%3Crect x='149' y='42' width='1' height='22'/%3E%3Crect x='152' y='42' width='3' height='22'/%3E%3Crect x='157' y='42' width='1' height='22'/%3E%3Crect x='160' y='42' width='2' height='22'/%3E%3Crect x='164' y='42' width='1' height='22'/%3E%3Crect x='167' y='42' width='3' height='22'/%3E%3Crect x='172' y='42' width='2' height='22'/%3E%3Crect x='176' y='42' width='1' height='22'/%3E%3Crect x='179' y='42' width='2' height='22'/%3E%3Crect x='183' y='42' width='3' height='22'/%3E%3Crect x='188' y='42' width='1' height='22'/%3E%3Crect x='191' y='42' width='2' height='22'/%3E%3Crect x='195' y='42' width='1' height='22'/%3E%3Crect x='198' y='42' width='3' height='22'/%3E%3Crect x='203' y='42' width='2' height='22'/%3E%3Crect x='207' y='42' width='1' height='22'/%3E%3Crect x='210' y='42' width='2' height='22'/%3E%3Crect x='214' y='42' width='3' height='22'/%3E%3Crect x='219' y='42' width='1' height='22'/%3E%3Crect x='222' y='42' width='2' height='22'/%3E%3Crect x='226' y='42' width='1' height='22'/%3E%3Crect x='229' y='42' width='3' height='22'/%3E%3Crect x='234' y='42' width='2' height='22'/%3E%3Crect x='238' y='42' width='1' height='22'/%3E%3Crect x='241' y='42' width='2' height='22'/%3E%3Crect x='245' y='42' width='3' height='22'/%3E%3Crect x='250' y='42' width='2' height='22'/%3E%3C/g%3E%3Ctext x='200' y='72' text-anchor='middle' font-size='8' fill='%23333' font-family='Arial'%3E*4518061015*%3C/text%3E%3Ctext x='30' y='95' font-size='8' fill='%23333' font-family='Arial'%3EIO ROSSI%3C/text%3E%3Crect x='140' y='85' width='180' height='35' fill='none' stroke='%23e53935' stroke-width='2' rx='2'/%3E%3Cg fill='%23000'%3E%3Crect x='145' y='89' width='2' height='18'/%3E%3Crect x='149' y='89' width='1' height='18'/%3E%3Crect x='152' y='89' width='3' height='18'/%3E%3Crect x='157' y='89' width='1' height='18'/%3E%3Crect x='160' y='89' width='2' height='18'/%3E%3Crect x='164' y='89' width='1' height='18'/%3E%3Crect x='167' y='89' width='3' height='18'/%3E%3Crect x='172' y='89' width='2' height='18'/%3E%3Crect x='176' y='89' width='1' height='18'/%3E%3Crect x='179' y='89' width='2' height='18'/%3E%3Crect x='183' y='89' width='3' height='18'/%3E%3Crect x='188' y='89' width='1' height='18'/%3E%3Crect x='191' y='89' width='2' height='18'/%3E%3Crect x='195' y='89' width='1' height='18'/%3E%3Crect x='198' y='89' width='3' height='18'/%3E%3Crect x='203' y='89' width='2' height='18'/%3E%3Crect x='207' y='89' width='1' height='18'/%3E%3Crect x='210' y='89' width='2' height='18'/%3E%3Crect x='214' y='89' width='3' height='18'/%3E%3Crect x='219' y='89' width='1' height='18'/%3E%3Crect x='222' y='89' width='2' height='18'/%3E%3Crect x='226' y='89' width='1' height='18'/%3E%3Crect x='229' y='89' width='3' height='18'/%3E%3Crect x='234' y='89' width='2' height='18'/%3E%3Crect x='238' y='89' width='1' height='18'/%3E%3Crect x='241' y='89' width='2' height='18'/%3E%3Crect x='245' y='89' width='3' height='18'/%3E%3Crect x='250' y='89' width='2' height='18'/%3E%3Crect x='254' y='89' width='1' height='18'/%3E%3Crect x='257' y='89' width='2' height='18'/%3E%3Crect x='261' y='89' width='3' height='18'/%3E%3Crect x='266' y='89' width='1' height='18'/%3E%3Crect x='269' y='89' width='2' height='18'/%3E%3Crect x='273' y='89' width='1' height='18'/%3E%3Crect x='276' y='89' width='3' height='18'/%3E%3Crect x='281' y='89' width='2' height='18'/%3E%3Crect x='285' y='89' width='1' height='18'/%3E%3Crect x='288' y='89' width='2' height='18'/%3E%3Crect x='292' y='89' width='3' height='18'/%3E%3Crect x='297' y='89' width='2' height='18'/%3E%3Crect x='301' y='89' width='1' height='18'/%3E%3Crect x='304' y='89' width='2' height='18'/%3E%3Crect x='308' y='89' width='3' height='18'/%3E%3Crect x='313' y='89' width='2' height='18'/%3E%3C/g%3E%3Ctext x='230' y='115' text-anchor='middle' font-size='7' fill='%23333' font-family='Arial'%3EMRARSS27H04L219D%3C/text%3E%3Ctext x='30' y='138' font-size='7' fill='%23666' font-family='Arial'%3ECITTA: TORINO%3C/text%3E%3Ctext x='200' y='138' font-size='7' fill='%23666' font-family='Arial'%3EPROV: TO%3C/text%3E%3Cline x1='20' y1='145' x2='320' y2='145' stroke='%23e0e0e0'/%3E%3Ctext x='30' y='158' font-size='7' fill='%23666' font-family='Arial'%3ECODICE ASL: 301%3C/text%3E%3Ctext x='170' y='158' font-size='7' fill='%23666' font-family='Arial'%3EDISPOSIZIONI REGIONALI:%3C/text%3E%3Ctext x='30' y='172' font-size='7' fill='%23666' font-family='Arial'%3EPRIORITA PRESCRIZIONE(U,B,D,P):%3C/text%3E%3Ctext x='250' y='172' font-size='7' fill='%23666' font-family='Arial'%3EProgrammabile%3C/text%3E%3Cline x1='20' y1='180' x2='320' y2='180' stroke='%23e0e0e0'/%3E%3Ctext x='30' y='193' font-size='7' fill='%23666' font-family='Arial'%3EPRESCRIZIONE%3C/text%3E%3Ctext x='280' y='193' font-size='7' fill='%23666' font-family='Arial'%3EQTA%3C/text%3E%3Ctext x='310' y='193' font-size='7' fill='%23666' font-family='Arial'%3EN%3C/text%3E%3C/svg%3E" alt="Esempio Ricetta" class="sample-image" id="sampleImage">
                 </div>
 
                 <div class="buttons-container">
