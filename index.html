@@ -601,27 +601,24 @@
                 field2Input.className = fields.field2 ? 'success' : '';
                 field3Input.className = fields.field3 ? 'success' : '';
 
-                // Show status
+                // Check if all 3 fields extracted
                 const foundCount = [fields.field1, fields.field2, fields.field3].filter(Boolean).length;
+
                 if (foundCount === 3) {
+                    // Success - go to page 3
                     statusMessage.textContent = 'Tutti i 3 codici estratti!';
                     statusMessage.className = 'status-message success';
-                } else if (foundCount > 0) {
-                    statusMessage.textContent = `Trovati ${foundCount}/3 codici.`;
-                    statusMessage.className = 'status-message success';
+                    showPage(3);
                 } else {
-                    statusMessage.textContent = 'Nessun codice trovato. Riprova.';
-                    statusMessage.className = 'status-message error';
+                    // Not all fields found - stay on page 2, ask to retake
+                    alert('Estrazione non riuscita. Scatta una nuova foto più chiara.');
+                    // Stay on page 2
                 }
-
-                // Go to page 3
-                showPage(3);
 
             } catch (error) {
                 console.error('OCR Error:', error);
-                statusMessage.textContent = 'Errore: ' + error.message;
-                statusMessage.className = 'status-message error';
-                showPage(3);
+                alert('Errore: ' + error.message + '. Riprova.');
+                // Stay on page 2
             } finally {
                 loading.classList.remove('active');
             }
