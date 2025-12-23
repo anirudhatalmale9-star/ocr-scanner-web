@@ -303,7 +303,7 @@
             font-size: 14px;
         }
 
-        #fileInput {
+        #fileInputCamera, #fileInputGallery {
             display: none;
         }
 
@@ -399,6 +399,7 @@
 
                 <div class="buttons-container">
                     <button class="btn btn-green" id="takePhotoBtn1">SCATTA FOTO</button>
+                    <button class="btn btn-gray" id="choosePhotoBtn1">SCEGLI DALLA GALLERIA</button>
                 </div>
 
             </div>
@@ -464,7 +465,8 @@
             <p class="loading-text">Elaborazione in corso...</p>
         </div>
 
-        <input type="file" id="fileInput" accept="image/*">
+        <input type="file" id="fileInputCamera" accept="image/*" capture="environment">
+        <input type="file" id="fileInputGallery" accept="image/*">
     </div>
 
     <script>
@@ -476,7 +478,8 @@
         const page2 = document.getElementById('page2');
         const page3 = document.getElementById('page3');
         const preview2 = document.getElementById('preview2');
-        const fileInput = document.getElementById('fileInput');
+        const fileInputCamera = document.getElementById('fileInputCamera');
+        const fileInputGallery = document.getElementById('fileInputGallery');
         const loading = document.getElementById('loading');
         const statusMessage = document.getElementById('statusMessage');
         const backBtn = document.getElementById('backBtn');
@@ -511,21 +514,26 @@
             currentPage = pageNum;
         }
 
-        // Page 1: Take Photo button
+        // Page 1: Take Photo button (camera)
         document.getElementById('takePhotoBtn1').addEventListener('click', () => {
-            fileInput.value = '';
-            fileInput.click();
+            fileInputCamera.value = '';
+            fileInputCamera.click();
         });
 
-        // Page 2: Retake Photo button
+        // Page 1: Choose from Gallery button
+        document.getElementById('choosePhotoBtn1').addEventListener('click', () => {
+            fileInputGallery.value = '';
+            fileInputGallery.click();
+        });
+
+        // Page 2: Retake Photo button (camera)
         document.getElementById('retakeBtn2').addEventListener('click', () => {
-            fileInput.value = '';
-            fileInput.click();
+            fileInputCamera.value = '';
+            fileInputCamera.click();
         });
 
-
-        // File input change
-        fileInput.addEventListener('change', (e) => {
+        // File input change handler (shared)
+        function handleFileSelect(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
@@ -544,7 +552,10 @@
                 };
                 reader.readAsDataURL(file);
             }
-        });
+        }
+
+        fileInputCamera.addEventListener('change', handleFileSelect);
+        fileInputGallery.addEventListener('change', handleFileSelect);
 
         // Scan button
         document.getElementById('scanBtn').addEventListener('click', processImage);
@@ -562,7 +573,8 @@
         closeBtn.addEventListener('click', () => {
             currentImageBase64 = null;
             currentImageSrc = null;
-            fileInput.value = '';
+            fileInputCamera.value = '';
+            fileInputGallery.value = '';
             extractedCodes = { field1: '', field2: '', field3: '' };
             document.getElementById('field1').value = '';
             document.getElementById('field2').value = '';
