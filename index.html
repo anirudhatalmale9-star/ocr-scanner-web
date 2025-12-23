@@ -801,12 +801,15 @@
             const barcode1 = document.getElementById('barcode1');
             const barcode2 = document.getElementById('barcode2');
             const barcode3 = document.getElementById('barcode3');
+            const notes = document.getElementById('notes').value;
 
             const width = 400;
-            const barcodeHeight = 100;
-            const padding = 20;
-            const labelHeight = 25;
-            const totalHeight = (barcodeHeight + labelHeight) * 3 + padding * 4;
+            const barcodeHeight = 80;
+            const padding = 15;
+            const labelHeight = 22;
+            const codeTextHeight = 25;
+            const noteHeight = notes ? 80 : 0;
+            const totalHeight = (barcodeHeight + labelHeight + codeTextHeight) * 3 + padding * 5 + noteHeight;
 
             canvas.width = width;
             canvas.height = totalHeight;
@@ -814,30 +817,73 @@
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, width, totalHeight);
 
-            ctx.fillStyle = '#333';
-            ctx.font = 'bold 14px Arial';
-
             let y = padding;
 
             // Draw barcode 1
-            ctx.fillText('1. NRE', padding, y + 15);
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('1. NRE', width / 2, y + 12);
             y += labelHeight;
             const img1 = await svgToImage(barcode1);
             ctx.drawImage(img1, (width - img1.width) / 2, y, img1.width, barcodeHeight);
-            y += barcodeHeight + padding;
+            y += barcodeHeight;
+            ctx.fillStyle = '#333';
+            ctx.font = '14px monospace';
+            ctx.fillText(extractedCodes.field1, width / 2, y + 18);
+            y += codeTextHeight + padding;
 
             // Draw barcode 2
-            ctx.fillText('2. NRE', padding, y + 15);
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.fillText('2. NRE', width / 2, y + 12);
             y += labelHeight;
             const img2 = await svgToImage(barcode2);
             ctx.drawImage(img2, (width - img2.width) / 2, y, img2.width, barcodeHeight);
-            y += barcodeHeight + padding;
+            y += barcodeHeight;
+            ctx.fillStyle = '#333';
+            ctx.font = '14px monospace';
+            ctx.fillText(extractedCodes.field2, width / 2, y + 18);
+            y += codeTextHeight + padding;
 
             // Draw barcode 3
-            ctx.fillText('3. CODICE FISCALE', padding, y + 15);
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.fillText('3. CODICE FISCALE', width / 2, y + 12);
             y += labelHeight;
             const img3 = await svgToImage(barcode3);
             ctx.drawImage(img3, (width - img3.width) / 2, y, img3.width, barcodeHeight);
+            y += barcodeHeight;
+            ctx.fillStyle = '#333';
+            ctx.font = '14px monospace';
+            ctx.fillText(extractedCodes.field3, width / 2, y + 18);
+            y += codeTextHeight + padding;
+
+            // Draw notes if present
+            if (notes) {
+                ctx.fillStyle = '#666';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText('NOTE:', padding, y + 15);
+                y += 20;
+                ctx.fillStyle = '#333';
+                ctx.font = '13px Arial';
+                // Word wrap notes
+                const words = notes.split(' ');
+                let line = '';
+                const maxWidth = width - padding * 2;
+                for (let word of words) {
+                    const testLine = line + word + ' ';
+                    if (ctx.measureText(testLine).width > maxWidth && line !== '') {
+                        ctx.fillText(line, padding, y + 15);
+                        line = word + ' ';
+                        y += 18;
+                    } else {
+                        line = testLine;
+                    }
+                }
+                ctx.fillText(line, padding, y + 15);
+            }
 
             return new Promise((resolve) => {
                 canvas.toBlob((blob) => {
