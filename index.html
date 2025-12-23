@@ -585,7 +585,7 @@
                 try {
                     JsBarcode("#barcode1", value, {
                         format: "CODE39", width: 2, height: 60,
-                        displayValue: true, fontSize: 14, margin: 10
+                        displayValue: false, margin: 10
                     });
                 } catch (err) {
                     document.getElementById('barcode1').innerHTML = '';
@@ -602,7 +602,7 @@
                 try {
                     JsBarcode("#barcode2", value, {
                         format: "CODE39", width: 1.5, height: 60,
-                        displayValue: true, fontSize: 14, margin: 10
+                        displayValue: false, margin: 10
                     });
                 } catch (err) {
                     document.getElementById('barcode2').innerHTML = '';
@@ -620,7 +620,7 @@
                 try {
                     JsBarcode("#barcode3", value, {
                         format: "CODE39", width: 1.2, height: 60,
-                        displayValue: true, fontSize: 12, margin: 10
+                        displayValue: false, margin: 10
                     });
                 } catch (err) {
                     document.getElementById('barcode3').innerHTML = '';
@@ -731,8 +731,7 @@
                         format: "CODE39",
                         width: 2,
                         height: 60,
-                        displayValue: true,
-                        fontSize: 14,
+                        displayValue: false,
                         margin: 10
                     });
                 }
@@ -741,8 +740,7 @@
                         format: "CODE39",
                         width: 1.5,
                         height: 60,
-                        displayValue: true,
-                        fontSize: 14,
+                        displayValue: false,
                         margin: 10
                     });
                 }
@@ -751,8 +749,7 @@
                         format: "CODE39",
                         width: 1.2,
                         height: 60,
-                        displayValue: true,
-                        fontSize: 12,
+                        displayValue: false,
                         margin: 10
                     });
                 }
