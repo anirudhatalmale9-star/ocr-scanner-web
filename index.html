@@ -361,6 +361,24 @@
             margin-bottom: 5px;
             font-weight: 500;
         }
+
+        .barcode-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 8px;
+            background: #fafafa;
+            font-family: monospace;
+        }
+
+        .barcode-input:focus {
+            outline: none;
+            border-color: #2196F3;
+            background: white;
+        }
     </style>
 </head>
 <body>
@@ -405,16 +423,19 @@
                 <div class="fields-section">
                     <div class="barcode-container">
                         <div class="barcode-label">1. NRE</div>
+                        <input type="text" id="field1" class="barcode-input" placeholder="NRE">
                         <svg id="barcode1"></svg>
                     </div>
 
                     <div class="barcode-container">
                         <div class="barcode-label">2. NRE</div>
+                        <input type="text" id="field2" class="barcode-input" placeholder="Codice Ricetta">
                         <svg id="barcode2"></svg>
                     </div>
 
                     <div class="barcode-container">
                         <div class="barcode-label">3. CODICE FISCALE</div>
+                        <input type="text" id="field3" class="barcode-input" placeholder="Codice Fiscale">
                         <svg id="barcode3"></svg>
                     </div>
 
@@ -543,6 +564,9 @@
             currentImageSrc = null;
             fileInput.value = '';
             extractedCodes = { field1: '', field2: '', field3: '' };
+            document.getElementById('field1').value = '';
+            document.getElementById('field2').value = '';
+            document.getElementById('field3').value = '';
             document.getElementById('notes').value = '';
             statusMessage.style.display = 'none';
             // Clear barcode SVGs
@@ -550,6 +574,60 @@
             document.getElementById('barcode2').innerHTML = '';
             document.getElementById('barcode3').innerHTML = '';
             showPage(1);
+        });
+
+        // Input field change handlers - regenerate barcode when edited
+        document.getElementById('field1').addEventListener('input', (e) => {
+            const value = e.target.value.toUpperCase();
+            e.target.value = value;
+            extractedCodes.field1 = value;
+            if (value) {
+                try {
+                    JsBarcode("#barcode1", value, {
+                        format: "CODE39", width: 2, height: 60,
+                        displayValue: true, fontSize: 14, margin: 10
+                    });
+                } catch (err) {
+                    document.getElementById('barcode1').innerHTML = '';
+                }
+            } else {
+                document.getElementById('barcode1').innerHTML = '';
+            }
+        });
+
+        document.getElementById('field2').addEventListener('input', (e) => {
+            const value = e.target.value;
+            extractedCodes.field2 = value;
+            if (value) {
+                try {
+                    JsBarcode("#barcode2", value, {
+                        format: "CODE39", width: 1.5, height: 60,
+                        displayValue: true, fontSize: 14, margin: 10
+                    });
+                } catch (err) {
+                    document.getElementById('barcode2').innerHTML = '';
+                }
+            } else {
+                document.getElementById('barcode2').innerHTML = '';
+            }
+        });
+
+        document.getElementById('field3').addEventListener('input', (e) => {
+            const value = e.target.value.toUpperCase();
+            e.target.value = value;
+            extractedCodes.field3 = value;
+            if (value) {
+                try {
+                    JsBarcode("#barcode3", value, {
+                        format: "CODE39", width: 1.2, height: 60,
+                        displayValue: true, fontSize: 12, margin: 10
+                    });
+                } catch (err) {
+                    document.getElementById('barcode3').innerHTML = '';
+                }
+            } else {
+                document.getElementById('barcode3').innerHTML = '';
+            }
         });
 
         // Extract fields from OCR text
@@ -643,6 +721,11 @@
         // Generate barcodes function
         function generateBarcodes(fields) {
             try {
+                // Populate input fields
+                document.getElementById('field1').value = fields.field1 || '';
+                document.getElementById('field2').value = fields.field2 || '';
+                document.getElementById('field3').value = fields.field3 || '';
+
                 if (fields.field1) {
                     JsBarcode("#barcode1", fields.field1, {
                         format: "CODE39",
