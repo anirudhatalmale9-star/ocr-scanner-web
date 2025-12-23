@@ -910,60 +910,35 @@
                 const barcodeBlob = await createCombinedBarcodeImage();
                 const barcodeFile = new File([barcodeBlob], 'ricetta_barcodes.png', { type: 'image/png' });
 
-                const shareText = `Ricetta Elettronica\n\n1. NRE: ${extractedCodes.field1}\n2. NRE: ${extractedCodes.field2}\n3. Codice Fiscale: ${extractedCodes.field3}${notes ? '\n\nNote: ' + notes : ''}`;
-
-                // Try to share with files first
-                if (navigator.share) {
+                // Check if file sharing is supported
+                if (navigator.canShare && navigator.canShare({ files: [barcodeFile] })) {
+                    // Share image directly
+                    await navigator.share({
+                        files: [barcodeFile]
+                    });
+                } else if (navigator.share) {
+                    // Try sharing with file anyway (some browsers support it without canShare)
                     try {
-                        // Try sharing with file
                         await navigator.share({
                             files: [barcodeFile]
                         });
-                        return; // Success - exit
-                    } catch (fileErr) {
-                        // File share failed, try text only
-                        console.log('File share failed, trying text:', fileErr);
-                    }
-
-                    // Fallback: download image then share text
-                    downloadImage(barcodeBlob);
-                    try {
+                    } catch (e) {
+                        // Fallback: share text only
+                        const shareText = `Ricetta Elettronica\n\n1. NRE: ${extractedCodes.field1}\n2. NRE: ${extractedCodes.field2}\n3. Codice Fiscale: ${extractedCodes.field3}${notes ? '\n\nNote: ' + notes : ''}`;
                         await navigator.share({
                             title: 'Ricetta Elettronica',
                             text: shareText
                         });
-                    } catch (textErr) {
-                        if (textErr.name !== 'AbortError') {
-                            copyToClipboard(shareText);
-                        }
                     }
                 } else {
-                    // No Web Share API - download and copy
-                    downloadImage(barcodeBlob);
-                    copyToClipboard(shareText);
+                    alert('Condivisione non supportata su questo browser');
                 }
             } catch (err) {
-                console.error('Share error:', err);
-                alert('Errore condivisione. Riprova.');
+                if (err.name !== 'AbortError') {
+                    console.error('Share error:', err);
+                }
             }
         });
-
-        function downloadImage(blob) {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'ricetta_barcodes.png';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Immagine scaricata! Testo copiato negli appunti.');
-            }).catch(() => {
-                alert('Immagine scaricata!');
-            });
-        }
     </script>
 </body>
 </html>
