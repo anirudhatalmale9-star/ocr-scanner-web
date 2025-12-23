@@ -866,46 +866,56 @@
 
                 const shareText = `Ricetta Elettronica\n\n1. NRE: ${extractedCodes.field1}\n2. NRE: ${extractedCodes.field2}\n3. Codice Fiscale: ${extractedCodes.field3}${notes ? '\n\nNote: ' + notes : ''}`;
 
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [barcodeFile] })) {
-                    await navigator.share({
-                        title: 'Ricetta Elettronica',
-                        text: shareText,
-                        files: [barcodeFile]
-                    });
-                } else if (navigator.share) {
-                    // Fallback to text only share
-                    await navigator.share({
-                        title: 'Ricetta Elettronica',
-                        text: shareText
-                    });
+                // Try to share with files first
+                if (navigator.share) {
+                    try {
+                        // Try sharing with file
+                        await navigator.share({
+                            files: [barcodeFile]
+                        });
+                        return; // Success - exit
+                    } catch (fileErr) {
+                        // File share failed, try text only
+                        console.log('File share failed, trying text:', fileErr);
+                    }
+
+                    // Fallback: download image then share text
+                    downloadImage(barcodeBlob);
+                    try {
+                        await navigator.share({
+                            title: 'Ricetta Elettronica',
+                            text: shareText
+                        });
+                    } catch (textErr) {
+                        if (textErr.name !== 'AbortError') {
+                            copyToClipboard(shareText);
+                        }
+                    }
                 } else {
-                    fallbackShare(shareText, barcodeBlob);
+                    // No Web Share API - download and copy
+                    downloadImage(barcodeBlob);
+                    copyToClipboard(shareText);
                 }
             } catch (err) {
-                if (err.name !== 'AbortError') {
-                    const shareText = `Ricetta Elettronica\n\n1. NRE: ${extractedCodes.field1}\n2. NRE: ${extractedCodes.field2}\n3. Codice Fiscale: ${extractedCodes.field3}`;
-                    fallbackShare(shareText, null);
-                }
+                console.error('Share error:', err);
+                alert('Errore condivisione. Riprova.');
             }
         });
 
-        function fallbackShare(text, barcodeBlob) {
-            if (barcodeBlob) {
-                // Create download link for the barcode image
-                const url = URL.createObjectURL(barcodeBlob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'ricetta_barcodes.png';
-                a.click();
-                URL.revokeObjectURL(url);
-                alert('Immagine barcode scaricata! Testo copiato negli appunti.');
-            }
+        function downloadImage(blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ricetta_barcodes.png';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
-                if (!barcodeBlob) {
-                    alert('Copiato negli appunti!');
-                }
+                alert('Immagine scaricata! Testo copiato negli appunti.');
             }).catch(() => {
-                alert(text);
+                alert('Immagine scaricata!');
             });
         }
     </script>
