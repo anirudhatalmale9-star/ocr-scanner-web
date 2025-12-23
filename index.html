@@ -455,7 +455,6 @@
         const page2 = document.getElementById('page2');
         const page3 = document.getElementById('page3');
         const preview2 = document.getElementById('preview2');
-        const preview3 = document.getElementById('preview3');
         const fileInput = document.getElementById('fileInput');
         const loading = document.getElementById('loading');
         const statusMessage = document.getElementById('statusMessage');
@@ -514,15 +513,9 @@
                     currentImageBase64 = base64.split(',')[1];
                     currentImageSrc = base64;
                     preview2.src = base64;
-                    preview3.src = base64;
 
                     // Clear previous results
-                    document.getElementById('field1').value = '';
-                    document.getElementById('field2').value = '';
-                    document.getElementById('field3').value = '';
-                    document.getElementById('field1').className = '';
-                    document.getElementById('field2').className = '';
-                    document.getElementById('field3').className = '';
+                    extractedCodes = { field1: '', field2: '', field3: '' };
                     statusMessage.className = 'status-message';
                     statusMessage.style.display = 'none';
 
@@ -549,14 +542,13 @@
             currentImageBase64 = null;
             currentImageSrc = null;
             fileInput.value = '';
-            document.getElementById('field1').value = '';
-            document.getElementById('field2').value = '';
-            document.getElementById('field3').value = '';
+            extractedCodes = { field1: '', field2: '', field3: '' };
             document.getElementById('notes').value = '';
-            document.getElementById('field1').className = '';
-            document.getElementById('field2').className = '';
-            document.getElementById('field3').className = '';
             statusMessage.style.display = 'none';
+            // Clear barcode SVGs
+            document.getElementById('barcode1').innerHTML = '';
+            document.getElementById('barcode2').innerHTML = '';
+            document.getElementById('barcode3').innerHTML = '';
             showPage(1);
         });
 
