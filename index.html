@@ -915,32 +915,50 @@
                 // Check if Web Share API with files is supported
                 if (navigator.share) {
                     // Check if we can share files
-                    const canShareFiles = navigator.canShare ? navigator.canShare(shareData) : true;
+                    const canShareFiles = navigator.canShare ? navigator.canShare(shareData) : false;
 
                     if (canShareFiles) {
+                        // Direct file sharing (Chrome Android, Safari iOS)
                         await navigator.share(shareData);
                     } else {
-                        // Cannot share files, try text only
-                        const shareText = `Ricetta Elettronica\n\n1. NRE: ${extractedCodes.field1}\n2. NRE: ${extractedCodes.field2}\n3. Codice Fiscale: ${extractedCodes.field3}${notes ? '\n\nNote: ' + notes : ''}`;
-                        await navigator.share({
-                            title: 'Ricetta Elettronica',
-                            text: shareText
-                        });
+                        // Browser doesn't support file sharing (Firefox)
+                        // Download the image first, then user can share from gallery
+                        downloadBarcodeImage(barcodeBlob);
+                        alert('Immagine salvata! Ora puoi condividerla dalla tua galleria.');
                     }
                 } else {
-                    alert('Condivisione non supportata. Usa Chrome su Android o Safari su iPhone.');
+                    // No Web Share API at all - just download
+                    downloadBarcodeImage(barcodeBlob);
+                    alert('Immagine salvata nella cartella Download.');
                 }
             } catch (err) {
                 if (err.name === 'AbortError') {
                     // User cancelled - do nothing
-                } else if (err.name === 'NotAllowedError') {
-                    alert('Permesso negato. Riprova.');
                 } else {
                     console.error('Share error:', err);
-                    alert('Errore: ' + err.message);
+                    // Fallback to download
+                    try {
+                        const barcodeBlob = await createCombinedBarcodeImage();
+                        downloadBarcodeImage(barcodeBlob);
+                        alert('Immagine salvata! Condividila dalla galleria.');
+                    } catch (e) {
+                        alert('Errore. Riprova.');
+                    }
                 }
             }
         });
+
+        // Download barcode image function
+        function downloadBarcodeImage(blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ricetta_barcodes.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
     </script>
 </body>
 </html>
