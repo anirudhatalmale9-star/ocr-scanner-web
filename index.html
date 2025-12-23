@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Scanner Ricetta</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -338,6 +339,28 @@
             background: #ffebee;
             color: #c62828;
         }
+
+        /* Barcode styles */
+        .barcode-container {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .barcode-container svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .barcode-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -377,26 +400,22 @@
 
             <!-- Page 3: Results -->
             <div class="page" id="page3">
-                <div class="preview-container">
-                    <img id="preview3" class="preview-image blue-border" alt="Preview">
-                </div>
-
                 <div class="status-message" id="statusMessage"></div>
 
                 <div class="fields-section">
-                    <div class="field-group">
-                        <label for="field1">1. NRE</label>
-                        <input type="text" id="field1" placeholder="">
+                    <div class="barcode-container">
+                        <div class="barcode-label">1. NRE</div>
+                        <svg id="barcode1"></svg>
                     </div>
 
-                    <div class="field-group">
-                        <label for="field2">2. NRE</label>
-                        <input type="text" id="field2" placeholder="">
+                    <div class="barcode-container">
+                        <div class="barcode-label">2. NRE</div>
+                        <svg id="barcode2"></svg>
                     </div>
 
-                    <div class="field-group">
-                        <label for="field3">3. CODICE FISCALE</label>
-                        <input type="text" id="field3" placeholder="">
+                    <div class="barcode-container">
+                        <div class="barcode-label">3. CODICE FISCALE</div>
+                        <svg id="barcode3"></svg>
                     </div>
 
                     <div class="note-group">
@@ -446,6 +465,7 @@
         let currentPage = 1;
         let currentImageBase64 = null;
         let currentImageSrc = null;
+        let extractedCodes = { field1: '', field2: '', field3: '' };
 
         const header = document.getElementById('header');
 
@@ -597,23 +617,18 @@
 
                 const fields = extractFields(text);
 
-                const field1Input = document.getElementById('field1');
-                const field2Input = document.getElementById('field2');
-                const field3Input = document.getElementById('field3');
-
-                field1Input.value = fields.field1;
-                field2Input.value = fields.field2;
-                field3Input.value = fields.field3;
-
-                // Add success styling to found fields
-                field1Input.className = fields.field1 ? 'success' : '';
-                field2Input.className = fields.field2 ? 'success' : '';
-                field3Input.className = fields.field3 ? 'success' : '';
+                // Store extracted values globally
+                extractedCodes.field1 = fields.field1;
+                extractedCodes.field2 = fields.field2;
+                extractedCodes.field3 = fields.field3;
 
                 // Check if all 3 fields extracted
                 const foundCount = [fields.field1, fields.field2, fields.field3].filter(Boolean).length;
 
                 if (foundCount === 3) {
+                    // Generate barcodes
+                    generateBarcodes(fields);
+
                     // Success - go to page 3
                     statusMessage.textContent = 'Tutti i 3 codici estratti!';
                     statusMessage.className = 'status-message success';
@@ -633,34 +648,178 @@
             }
         }
 
+        // Generate barcodes function
+        function generateBarcodes(fields) {
+            try {
+                if (fields.field1) {
+                    JsBarcode("#barcode1", fields.field1, {
+                        format: "CODE39",
+                        width: 2,
+                        height: 60,
+                        displayValue: true,
+                        fontSize: 14,
+                        margin: 10
+                    });
+                }
+                if (fields.field2) {
+                    JsBarcode("#barcode2", fields.field2, {
+                        format: "CODE39",
+                        width: 1.5,
+                        height: 60,
+                        displayValue: true,
+                        fontSize: 14,
+                        margin: 10
+                    });
+                }
+                if (fields.field3) {
+                    JsBarcode("#barcode3", fields.field3, {
+                        format: "CODE39",
+                        width: 1.2,
+                        height: 60,
+                        displayValue: true,
+                        fontSize: 12,
+                        margin: 10
+                    });
+                }
+            } catch (e) {
+                console.error('Barcode generation error:', e);
+            }
+        }
+
+        // Convert SVG to PNG and create blob
+        function svgToPngBlob(svgElement) {
+            return new Promise((resolve) => {
+                const svgData = new XMLSerializer().serializeToString(svgElement);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+
+                img.onload = () => {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                    canvas.toBlob((blob) => {
+                        resolve(blob);
+                    }, 'image/png');
+                };
+
+                img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+            });
+        }
+
+        // Create combined barcode image
+        async function createCombinedBarcodeImage() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            const barcode1 = document.getElementById('barcode1');
+            const barcode2 = document.getElementById('barcode2');
+            const barcode3 = document.getElementById('barcode3');
+
+            const width = 400;
+            const barcodeHeight = 100;
+            const padding = 20;
+            const labelHeight = 25;
+            const totalHeight = (barcodeHeight + labelHeight) * 3 + padding * 4;
+
+            canvas.width = width;
+            canvas.height = totalHeight;
+
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, width, totalHeight);
+
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 14px Arial';
+
+            let y = padding;
+
+            // Draw barcode 1
+            ctx.fillText('1. NRE', padding, y + 15);
+            y += labelHeight;
+            const img1 = await svgToImage(barcode1);
+            ctx.drawImage(img1, (width - img1.width) / 2, y, img1.width, barcodeHeight);
+            y += barcodeHeight + padding;
+
+            // Draw barcode 2
+            ctx.fillText('2. NRE', padding, y + 15);
+            y += labelHeight;
+            const img2 = await svgToImage(barcode2);
+            ctx.drawImage(img2, (width - img2.width) / 2, y, img2.width, barcodeHeight);
+            y += barcodeHeight + padding;
+
+            // Draw barcode 3
+            ctx.fillText('3. CODICE FISCALE', padding, y + 15);
+            y += labelHeight;
+            const img3 = await svgToImage(barcode3);
+            ctx.drawImage(img3, (width - img3.width) / 2, y, img3.width, barcodeHeight);
+
+            return new Promise((resolve) => {
+                canvas.toBlob((blob) => {
+                    resolve(blob);
+                }, 'image/png');
+            });
+        }
+
+        function svgToImage(svgElement) {
+            return new Promise((resolve) => {
+                const svgData = new XMLSerializer().serializeToString(svgElement);
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+            });
+        }
+
         // Share functionality
         document.getElementById('shareBtn').addEventListener('click', async () => {
-            const field1 = document.getElementById('field1').value;
-            const field2 = document.getElementById('field2').value;
-            const field3 = document.getElementById('field3').value;
             const notes = document.getElementById('notes').value;
 
-            const shareText = `Ricetta Elettronica\n\n1. NRE: ${field1}\n2. NRE: ${field2}\n3. Codice Fiscale: ${field3}${notes ? '\n\nNote: ' + notes : ''}`;
+            try {
+                // Create combined barcode image
+                const barcodeBlob = await createCombinedBarcodeImage();
+                const barcodeFile = new File([barcodeBlob], 'ricetta_barcodes.png', { type: 'image/png' });
 
-            if (navigator.share) {
-                try {
+                const shareText = `Ricetta Elettronica\n\n1. NRE: ${extractedCodes.field1}\n2. NRE: ${extractedCodes.field2}\n3. Codice Fiscale: ${extractedCodes.field3}${notes ? '\n\nNote: ' + notes : ''}`;
+
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [barcodeFile] })) {
+                    await navigator.share({
+                        title: 'Ricetta Elettronica',
+                        text: shareText,
+                        files: [barcodeFile]
+                    });
+                } else if (navigator.share) {
+                    // Fallback to text only share
                     await navigator.share({
                         title: 'Ricetta Elettronica',
                         text: shareText
                     });
-                } catch (err) {
-                    if (err.name !== 'AbortError') {
-                        fallbackShare(shareText);
-                    }
+                } else {
+                    fallbackShare(shareText, barcodeBlob);
                 }
-            } else {
-                fallbackShare(shareText);
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    const shareText = `Ricetta Elettronica\n\n1. NRE: ${extractedCodes.field1}\n2. NRE: ${extractedCodes.field2}\n3. Codice Fiscale: ${extractedCodes.field3}`;
+                    fallbackShare(shareText, null);
+                }
             }
         });
 
-        function fallbackShare(text) {
+        function fallbackShare(text, barcodeBlob) {
+            if (barcodeBlob) {
+                // Create download link for the barcode image
+                const url = URL.createObjectURL(barcodeBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'ricetta_barcodes.png';
+                a.click();
+                URL.revokeObjectURL(url);
+                alert('Immagine barcode scaricata! Testo copiato negli appunti.');
+            }
             navigator.clipboard.writeText(text).then(() => {
-                alert('Copiato negli appunti!');
+                if (!barcodeBlob) {
+                    alert('Copiato negli appunti!');
+                }
             }).catch(() => {
                 alert(text);
             });
