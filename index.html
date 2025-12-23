@@ -910,20 +910,17 @@
                 const barcodeBlob = await createCombinedBarcodeImage();
                 const barcodeFile = new File([barcodeBlob], 'ricetta_barcodes.png', { type: 'image/png' });
 
-                // Check if file sharing is supported
-                if (navigator.canShare && navigator.canShare({ files: [barcodeFile] })) {
-                    // Share image directly
-                    await navigator.share({
-                        files: [barcodeFile]
-                    });
-                } else if (navigator.share) {
-                    // Try sharing with file anyway (some browsers support it without canShare)
-                    try {
-                        await navigator.share({
-                            files: [barcodeFile]
-                        });
-                    } catch (e) {
-                        // Fallback: share text only
+                const shareData = { files: [barcodeFile] };
+
+                // Check if Web Share API with files is supported
+                if (navigator.share) {
+                    // Check if we can share files
+                    const canShareFiles = navigator.canShare ? navigator.canShare(shareData) : true;
+
+                    if (canShareFiles) {
+                        await navigator.share(shareData);
+                    } else {
+                        // Cannot share files, try text only
                         const shareText = `Ricetta Elettronica\n\n1. NRE: ${extractedCodes.field1}\n2. NRE: ${extractedCodes.field2}\n3. Codice Fiscale: ${extractedCodes.field3}${notes ? '\n\nNote: ' + notes : ''}`;
                         await navigator.share({
                             title: 'Ricetta Elettronica',
@@ -931,11 +928,16 @@
                         });
                     }
                 } else {
-                    alert('Condivisione non supportata su questo browser');
+                    alert('Condivisione non supportata. Usa Chrome su Android o Safari su iPhone.');
                 }
             } catch (err) {
-                if (err.name !== 'AbortError') {
+                if (err.name === 'AbortError') {
+                    // User cancelled - do nothing
+                } else if (err.name === 'NotAllowedError') {
+                    alert('Permesso negato. Riprova.');
+                } else {
                     console.error('Share error:', err);
+                    alert('Errore: ' + err.message);
                 }
             }
         });
