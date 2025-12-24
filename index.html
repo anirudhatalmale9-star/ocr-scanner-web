@@ -803,12 +803,13 @@
             const barcode3 = document.getElementById('barcode3');
             const notes = document.getElementById('notes').value;
 
-            const width = 400;
-            const barcodeHeight = 80;
-            const padding = 15;
-            const labelHeight = 22;
-            const codeTextHeight = 25;
-            const noteHeight = notes ? 80 : 0;
+            // High resolution image (800px width for crisp barcodes)
+            const width = 800;
+            const barcodeHeight = 160;
+            const padding = 30;
+            const labelHeight = 44;
+            const codeTextHeight = 50;
+            const noteHeight = notes ? 160 : 0;
             const totalHeight = (barcodeHeight + labelHeight + codeTextHeight) * 3 + padding * 5 + noteHeight;
 
             canvas.width = width;
@@ -821,53 +822,62 @@
 
             // Draw barcode 1
             ctx.fillStyle = '#666';
-            ctx.font = '12px Arial';
+            ctx.font = '24px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('1. NRE', width / 2, y + 12);
+            ctx.fillText('1. NRE', width / 2, y + 28);
             y += labelHeight;
             const img1 = await svgToImage(barcode1);
-            ctx.drawImage(img1, (width - img1.width) / 2, y, img1.width, barcodeHeight);
+            const scale1 = Math.min((width - 60) / img1.width, barcodeHeight / img1.height);
+            const w1 = img1.width * scale1;
+            const h1 = img1.height * scale1;
+            ctx.drawImage(img1, (width - w1) / 2, y, w1, h1);
             y += barcodeHeight;
             ctx.fillStyle = '#333';
-            ctx.font = '14px monospace';
-            ctx.fillText(extractedCodes.field1, width / 2, y + 18);
+            ctx.font = '28px monospace';
+            ctx.fillText(extractedCodes.field1, width / 2, y + 36);
             y += codeTextHeight + padding;
 
             // Draw barcode 2
             ctx.fillStyle = '#666';
-            ctx.font = '12px Arial';
-            ctx.fillText('2. NRE', width / 2, y + 12);
+            ctx.font = '24px Arial';
+            ctx.fillText('2. NRE', width / 2, y + 28);
             y += labelHeight;
             const img2 = await svgToImage(barcode2);
-            ctx.drawImage(img2, (width - img2.width) / 2, y, img2.width, barcodeHeight);
+            const scale2 = Math.min((width - 60) / img2.width, barcodeHeight / img2.height);
+            const w2 = img2.width * scale2;
+            const h2 = img2.height * scale2;
+            ctx.drawImage(img2, (width - w2) / 2, y, w2, h2);
             y += barcodeHeight;
             ctx.fillStyle = '#333';
-            ctx.font = '14px monospace';
-            ctx.fillText(extractedCodes.field2, width / 2, y + 18);
+            ctx.font = '28px monospace';
+            ctx.fillText(extractedCodes.field2, width / 2, y + 36);
             y += codeTextHeight + padding;
 
             // Draw barcode 3
             ctx.fillStyle = '#666';
-            ctx.font = '12px Arial';
-            ctx.fillText('3. CODICE FISCALE', width / 2, y + 12);
+            ctx.font = '24px Arial';
+            ctx.fillText('3. CODICE FISCALE', width / 2, y + 28);
             y += labelHeight;
             const img3 = await svgToImage(barcode3);
-            ctx.drawImage(img3, (width - img3.width) / 2, y, img3.width, barcodeHeight);
+            const scale3 = Math.min((width - 60) / img3.width, barcodeHeight / img3.height);
+            const w3 = img3.width * scale3;
+            const h3 = img3.height * scale3;
+            ctx.drawImage(img3, (width - w3) / 2, y, w3, h3);
             y += barcodeHeight;
             ctx.fillStyle = '#333';
-            ctx.font = '14px monospace';
-            ctx.fillText(extractedCodes.field3, width / 2, y + 18);
+            ctx.font = '28px monospace';
+            ctx.fillText(extractedCodes.field3, width / 2, y + 36);
             y += codeTextHeight + padding;
 
             // Draw notes if present
             if (notes) {
                 ctx.fillStyle = '#666';
-                ctx.font = 'bold 12px Arial';
+                ctx.font = 'bold 24px Arial';
                 ctx.textAlign = 'left';
-                ctx.fillText('NOTE:', padding, y + 15);
-                y += 20;
+                ctx.fillText('NOTE:', padding, y + 30);
+                y += 40;
                 ctx.fillStyle = '#333';
-                ctx.font = '13px Arial';
+                ctx.font = '26px Arial';
                 // Word wrap notes
                 const words = notes.split(' ');
                 let line = '';
@@ -875,14 +885,14 @@
                 for (let word of words) {
                     const testLine = line + word + ' ';
                     if (ctx.measureText(testLine).width > maxWidth && line !== '') {
-                        ctx.fillText(line, padding, y + 15);
+                        ctx.fillText(line, padding, y + 30);
                         line = word + ' ';
-                        y += 18;
+                        y += 36;
                     } else {
                         line = testLine;
                     }
                 }
-                ctx.fillText(line, padding, y + 15);
+                ctx.fillText(line, padding, y + 30);
             }
 
             return new Promise((resolve) => {
