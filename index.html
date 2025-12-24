@@ -829,8 +829,12 @@
             const barcodeHeight = 120 * scale;
             const inputHeight = 60 * scale;
             const boxHeight = labelHeight + barcodeHeight + inputHeight + 40 * scale;
-            const noteBoxHeight = notes ? 120 * scale : 0;
-            const totalHeight = titleHeight + boxHeight * 3 + boxMargin * 5 + noteBoxHeight;
+
+            // Calculate notes height based on line count
+            const noteLines = notes ? notes.split('\n') : [];
+            const lineHeight = 28 * scale;
+            const noteSectionHeight = notes ? (40 * scale + Math.max(70 * scale, (noteLines.length + 1) * lineHeight + 20 * scale) + boxMargin) : 0;
+            const totalHeight = titleHeight + boxHeight * 3 + boxMargin * 5 + noteSectionHeight;
 
             canvas.width = width;
             canvas.height = totalHeight;
@@ -943,13 +947,18 @@
 
             // Draw notes if present
             if (notes) {
+                // Split notes by line breaks first
+                const noteLines = notes.split('\n');
+                const lineHeight = 28 * scale;
+                const noteBoxHeight = Math.max(70 * scale, (noteLines.length + 1) * lineHeight + 20 * scale);
+
                 ctx.fillStyle = '#666';
                 ctx.font = `bold ${24 * scale}px Arial`;
                 ctx.textAlign = 'left';
                 ctx.fillText('NOTE', boxMargin + 10 * scale, y + 30 * scale);
 
-                // Note input box
-                roundRect(ctx, boxMargin, y + 40 * scale, boxWidth, 70 * scale, 10 * scale);
+                // Note input box - dynamic height based on lines
+                roundRect(ctx, boxMargin, y + 40 * scale, boxWidth, noteBoxHeight, 10 * scale);
                 ctx.fillStyle = 'white';
                 ctx.fill();
                 ctx.strokeStyle = '#e0e0e0';
@@ -959,22 +968,30 @@
                 ctx.fillStyle = '#333';
                 ctx.font = `${22 * scale}px Arial`;
                 ctx.textAlign = 'left';
-                // Word wrap notes
-                const words = notes.split(' ');
-                let line = '';
+
+                // Draw each line separately, preserving line breaks
                 let noteY = y + 75 * scale;
                 const maxWidth = boxWidth - 40 * scale;
-                for (let word of words) {
-                    const testLine = line + word + ' ';
-                    if (ctx.measureText(testLine).width > maxWidth && line !== '') {
-                        ctx.fillText(line, boxMargin + 20 * scale, noteY);
-                        line = word + ' ';
-                        noteY += 28 * scale;
-                    } else {
-                        line = testLine;
+
+                for (let noteLine of noteLines) {
+                    // Word wrap within each line if needed
+                    const words = noteLine.split(' ');
+                    let line = '';
+                    for (let word of words) {
+                        const testLine = line + word + ' ';
+                        if (ctx.measureText(testLine).width > maxWidth && line !== '') {
+                            ctx.fillText(line.trim(), boxMargin + 20 * scale, noteY);
+                            line = word + ' ';
+                            noteY += lineHeight;
+                        } else {
+                            line = testLine;
+                        }
                     }
+                    if (line.trim()) {
+                        ctx.fillText(line.trim(), boxMargin + 20 * scale, noteY);
+                    }
+                    noteY += lineHeight;
                 }
-                ctx.fillText(line, boxMargin + 20 * scale, noteY);
             }
 
             return new Promise((resolve) => {
