@@ -793,6 +793,21 @@
             });
         }
 
+        // Helper function to draw rounded rectangle
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
         // Create combined barcode image
         async function createCombinedBarcodeImage() {
             const canvas = document.createElement('canvas');
@@ -803,96 +818,155 @@
             const barcode3 = document.getElementById('barcode3');
             const notes = document.getElementById('notes').value;
 
-            // High resolution image (800px width for crisp barcodes)
+            // High resolution image
             const width = 800;
-            const barcodeHeight = 160;
-            const padding = 30;
-            const labelHeight = 44;
-            const codeTextHeight = 50;
-            const noteHeight = notes ? 160 : 0;
-            const totalHeight = (barcodeHeight + labelHeight + codeTextHeight) * 3 + padding * 5 + noteHeight;
+            const boxPadding = 30;
+            const boxMargin = 20;
+            const boxWidth = width - boxMargin * 2;
+            const labelHeight = 40;
+            const barcodeHeight = 120;
+            const inputHeight = 60;
+            const boxHeight = labelHeight + barcodeHeight + inputHeight + 40;
+            const noteBoxHeight = notes ? 120 : 0;
+            const totalHeight = boxHeight * 3 + boxMargin * 5 + noteBoxHeight;
 
             canvas.width = width;
             canvas.height = totalHeight;
 
-            ctx.fillStyle = 'white';
+            // Background
+            ctx.fillStyle = '#f5f5f5';
             ctx.fillRect(0, 0, width, totalHeight);
 
-            let y = padding;
+            let y = boxMargin;
 
-            // Draw barcode 1
+            // Draw barcode box 1
+            roundRect(ctx, boxMargin, y, boxWidth, boxHeight, 16);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
             ctx.fillStyle = '#666';
             ctx.font = '24px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('1. NRE', width / 2, y + 28);
-            y += labelHeight;
+            ctx.fillText('1. NRE', width / 2, y + 35);
+
             const img1 = await svgToImage(barcode1);
-            const scale1 = Math.min((width - 60) / img1.width, barcodeHeight / img1.height);
+            const scale1 = Math.min((boxWidth - 60) / img1.width, barcodeHeight / img1.height);
             const w1 = img1.width * scale1;
             const h1 = img1.height * scale1;
-            ctx.drawImage(img1, (width - w1) / 2, y, w1, h1);
-            y += barcodeHeight;
-            ctx.fillStyle = '#333';
-            ctx.font = '28px monospace';
-            ctx.fillText(extractedCodes.field1, width / 2, y + 36);
-            y += codeTextHeight + padding;
+            ctx.drawImage(img1, (width - w1) / 2, y + labelHeight + 10, w1, h1);
 
-            // Draw barcode 2
+            // Input box for code 1
+            roundRect(ctx, boxMargin + 20, y + labelHeight + barcodeHeight + 15, boxWidth - 40, inputHeight - 10, 10);
+            ctx.fillStyle = '#fafafa';
+            ctx.fill();
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.fillStyle = '#333';
+            ctx.font = '26px monospace';
+            ctx.fillText(extractedCodes.field1, width / 2, y + labelHeight + barcodeHeight + 50);
+
+            y += boxHeight + boxMargin;
+
+            // Draw barcode box 2
+            roundRect(ctx, boxMargin, y, boxWidth, boxHeight, 16);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
             ctx.fillStyle = '#666';
             ctx.font = '24px Arial';
-            ctx.fillText('2. NRE', width / 2, y + 28);
-            y += labelHeight;
+            ctx.fillText('2. NRE', width / 2, y + 35);
+
             const img2 = await svgToImage(barcode2);
-            const scale2 = Math.min((width - 60) / img2.width, barcodeHeight / img2.height);
+            const scale2 = Math.min((boxWidth - 60) / img2.width, barcodeHeight / img2.height);
             const w2 = img2.width * scale2;
             const h2 = img2.height * scale2;
-            ctx.drawImage(img2, (width - w2) / 2, y, w2, h2);
-            y += barcodeHeight;
-            ctx.fillStyle = '#333';
-            ctx.font = '28px monospace';
-            ctx.fillText(extractedCodes.field2, width / 2, y + 36);
-            y += codeTextHeight + padding;
+            ctx.drawImage(img2, (width - w2) / 2, y + labelHeight + 10, w2, h2);
 
-            // Draw barcode 3
+            // Input box for code 2
+            roundRect(ctx, boxMargin + 20, y + labelHeight + barcodeHeight + 15, boxWidth - 40, inputHeight - 10, 10);
+            ctx.fillStyle = '#fafafa';
+            ctx.fill();
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.fillStyle = '#333';
+            ctx.font = '26px monospace';
+            ctx.fillText(extractedCodes.field2, width / 2, y + labelHeight + barcodeHeight + 50);
+
+            y += boxHeight + boxMargin;
+
+            // Draw barcode box 3
+            roundRect(ctx, boxMargin, y, boxWidth, boxHeight, 16);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
             ctx.fillStyle = '#666';
             ctx.font = '24px Arial';
-            ctx.fillText('3. CODICE FISCALE', width / 2, y + 28);
-            y += labelHeight;
+            ctx.fillText('3. CODICE FISCALE', width / 2, y + 35);
+
             const img3 = await svgToImage(barcode3);
-            const scale3 = Math.min((width - 60) / img3.width, barcodeHeight / img3.height);
+            const scale3 = Math.min((boxWidth - 60) / img3.width, barcodeHeight / img3.height);
             const w3 = img3.width * scale3;
             const h3 = img3.height * scale3;
-            ctx.drawImage(img3, (width - w3) / 2, y, w3, h3);
-            y += barcodeHeight;
+            ctx.drawImage(img3, (width - w3) / 2, y + labelHeight + 10, w3, h3);
+
+            // Input box for code 3
+            roundRect(ctx, boxMargin + 20, y + labelHeight + barcodeHeight + 15, boxWidth - 40, inputHeight - 10, 10);
+            ctx.fillStyle = '#fafafa';
+            ctx.fill();
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 2;
+            ctx.stroke();
             ctx.fillStyle = '#333';
-            ctx.font = '28px monospace';
-            ctx.fillText(extractedCodes.field3, width / 2, y + 36);
-            y += codeTextHeight + padding;
+            ctx.font = '26px monospace';
+            ctx.fillText(extractedCodes.field3, width / 2, y + labelHeight + barcodeHeight + 50);
+
+            y += boxHeight + boxMargin;
 
             // Draw notes if present
             if (notes) {
                 ctx.fillStyle = '#666';
                 ctx.font = 'bold 24px Arial';
                 ctx.textAlign = 'left';
-                ctx.fillText('NOTE:', padding, y + 30);
-                y += 40;
+                ctx.fillText('NOTE', boxMargin + 10, y + 30);
+
+                // Note input box
+                roundRect(ctx, boxMargin, y + 40, boxWidth, 70, 10);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+                ctx.strokeStyle = '#e0e0e0';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
                 ctx.fillStyle = '#333';
-                ctx.font = '26px Arial';
+                ctx.font = '22px Arial';
+                ctx.textAlign = 'left';
                 // Word wrap notes
                 const words = notes.split(' ');
                 let line = '';
-                const maxWidth = width - padding * 2;
+                let noteY = y + 75;
+                const maxWidth = boxWidth - 40;
                 for (let word of words) {
                     const testLine = line + word + ' ';
                     if (ctx.measureText(testLine).width > maxWidth && line !== '') {
-                        ctx.fillText(line, padding, y + 30);
+                        ctx.fillText(line, boxMargin + 20, noteY);
                         line = word + ' ';
-                        y += 36;
+                        noteY += 28;
                     } else {
                         line = testLine;
                     }
                 }
-                ctx.fillText(line, padding, y + 30);
+                ctx.fillText(line, boxMargin + 20, noteY);
             }
 
             return new Promise((resolve) => {
