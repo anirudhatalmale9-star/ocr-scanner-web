@@ -824,12 +824,13 @@
             const boxPadding = 30 * scale;
             const boxMargin = 20 * scale;
             const boxWidth = width - boxMargin * 2;
+            const titleHeight = 60 * scale;
             const labelHeight = 40 * scale;
             const barcodeHeight = 120 * scale;
             const inputHeight = 60 * scale;
             const boxHeight = labelHeight + barcodeHeight + inputHeight + 40 * scale;
             const noteBoxHeight = notes ? 120 * scale : 0;
-            const totalHeight = boxHeight * 3 + boxMargin * 5 + noteBoxHeight;
+            const totalHeight = titleHeight + boxHeight * 3 + boxMargin * 5 + noteBoxHeight;
 
             canvas.width = width;
             canvas.height = totalHeight;
@@ -838,7 +839,13 @@
             ctx.fillStyle = '#f5f5f5';
             ctx.fillRect(0, 0, width, totalHeight);
 
-            let y = boxMargin;
+            // Title
+            ctx.fillStyle = '#333';
+            ctx.font = `bold ${32 * scale}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('RICETTA ELETTRONICA', width / 2, boxMargin + 40 * scale);
+
+            let y = boxMargin + titleHeight;
 
             // Draw barcode box 1
             roundRect(ctx, boxMargin, y, boxWidth, boxHeight, 16 * scale);
