@@ -830,8 +830,8 @@
             const inputHeight = 60 * scale;
             const boxHeight = labelHeight + barcodeHeight + inputHeight + 40 * scale;
 
-            // Calculate notes height based on line count
-            const noteLines = notes ? notes.split('\n') : [];
+            // Calculate notes height based on line count (handle all line break types)
+            const noteLines = notes ? notes.split(/\r\n|\r|\n/) : [];
             const lineHeight = 28 * scale;
             const noteSectionHeight = notes ? (40 * scale + Math.max(70 * scale, (noteLines.length + 1) * lineHeight + 20 * scale) + boxMargin) : 0;
             const totalHeight = titleHeight + boxHeight * 3 + boxMargin * 5 + noteSectionHeight;
@@ -947,8 +947,8 @@
 
             // Draw notes if present
             if (notes) {
-                // Split notes by line breaks first
-                const noteLines = notes.split('\n');
+                // Split notes by line breaks first (handle all line break types)
+                const noteLines = notes.split(/\r\n|\r|\n/);
                 const lineHeight = 28 * scale;
                 const noteBoxHeight = Math.max(70 * scale, (noteLines.length + 1) * lineHeight + 20 * scale);
 
