@@ -708,58 +708,74 @@
 
         // Extract fields from OCR text
         function extractFields(text) {
-            // Clean text - normalize spaces and fix common OCR errors
-            let cleanText = text.replace(/\s+/g, ' ');
-            // Fix common OCR misreads
-            cleanText = cleanText.replace(/\|/g, '1').replace(/l/g, '1').replace(/O/g, '0');
+            // Clean text - normalize spaces
+            let cleanText = text.replace(/\s+/g, ' ').toUpperCase();
+
+            // Fix common OCR misreads for asterisks
+            cleanText = cleanText.replace(/\*/g, '*');  // normalize asterisks
+            cleanText = cleanText.replace(/×/g, '*');   // multiplication sign to asterisk
+            cleanText = cleanText.replace(/✱/g, '*');   // heavy asterisk
+            cleanText = cleanText.replace(/⁎/g, '*');   // low asterisk
+
+            console.log('Clean text:', cleanText);
 
             let nre = '';
             let ricetta = '';
             let cf = '';
 
-            // Pattern 1: NRE Code like 1900A (digits + letter) - between asterisks or standalone
-            const nrePattern1 = /\*(\d{3,5}[A-Z])\*/gi;
-            const nrePattern2 = /(\d{4,5}[A-Z])/gi;
-            let nreMatches = cleanText.match(nrePattern1) || [];
-            if (nreMatches.length > 0) {
-                nre = nreMatches[0].replace(/\*/g, '');
-            } else {
-                nreMatches = cleanText.match(nrePattern2) || [];
-                if (nreMatches.length > 0) {
-                    nre = nreMatches[0];
+            // PRIORITY: First extract ALL text between asterisks *...*
+            const asteriskPattern = /\*([^*]+)\*/g;
+            const allMatches = [];
+            let match;
+            while ((match = asteriskPattern.exec(cleanText)) !== null) {
+                allMatches.push(match[1].trim());
+            }
+
+            console.log('All asterisk matches:', allMatches);
+
+            // Now classify each match
+            for (const code of allMatches) {
+                // Clean the code - remove spaces and fix common OCR errors
+                let cleanCode = code.replace(/\s/g, '');
+                cleanCode = cleanCode.replace(/O/g, '0');  // O to 0 for numbers
+                cleanCode = cleanCode.replace(/I/g, '1');  // I to 1 for numbers
+                cleanCode = cleanCode.replace(/L/g, '1');  // L to 1 for numbers
+
+                // NRE Code: 4-5 digits + 1 letter (e.g., 1900A, 010A2)
+                if (/^\d{3,5}[A-Z]$/.test(cleanCode) && !nre) {
+                    nre = cleanCode;
+                    console.log('Found NRE:', nre);
+                }
+                // 10-digit number (Codice Ricetta)
+                else if (/^\d{10}$/.test(cleanCode) && !ricetta) {
+                    ricetta = cleanCode;
+                    console.log('Found Ricetta:', ricetta);
+                }
+                // Codice Fiscale: 16 characters (6 letters + 2 digits + 1 letter + 2 digits + 1 letter + 3 digits + 1 letter)
+                else if (/^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/.test(cleanCode) && !cf) {
+                    cf = cleanCode;
+                    console.log('Found CF:', cf);
                 }
             }
 
-            // Pattern 2: 10-digit number (Codice Ricetta) - between asterisks or standalone
-            const ricettaPattern1 = /\*(\d{10})\*/g;
-            const ricettaPattern2 = /(\d{10})/g;
-            let ricettaMatches = cleanText.match(ricettaPattern1) || [];
-            if (ricettaMatches.length > 0) {
-                ricetta = ricettaMatches[0].replace(/\*/g, '');
-            } else {
-                ricettaMatches = cleanText.match(ricettaPattern2) || [];
-                if (ricettaMatches.length > 0) {
-                    ricetta = ricettaMatches[0];
-                }
+            // FALLBACK: If asterisk matching didn't find all codes, try direct pattern matching
+            if (!nre) {
+                const nreMatch = cleanText.match(/(\d{4,5}[A-Z])/);
+                if (nreMatch) nre = nreMatch[1];
+            }
+            if (!ricetta) {
+                const ricettaMatch = cleanText.match(/(\d{10})/);
+                if (ricettaMatch) ricetta = ricettaMatch[1];
+            }
+            if (!cf) {
+                const cfMatch = cleanText.match(/([A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z])/);
+                if (cfMatch) cf = cfMatch[1];
             }
 
-            // Pattern 3: Codice Fiscale (16 chars) - between asterisks or standalone
-            const cfPattern1 = /\*([A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z])\*/gi;
-            const cfPattern2 = /([A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z])/gi;
-            let cfMatches = cleanText.match(cfPattern1) || [];
-            if (cfMatches.length > 0) {
-                cf = cfMatches[0].replace(/\*/g, '').toUpperCase();
-            } else {
-                cfMatches = cleanText.match(cfPattern2) || [];
-                if (cfMatches.length > 0) {
-                    cf = cfMatches[0].toUpperCase();
-                }
-            }
-
-            console.log('Extracted:', { nre, ricetta, cf });
+            console.log('Final extracted:', { nre, ricetta, cf });
 
             return {
-                field1: nre.toUpperCase(),
+                field1: nre,
                 field2: ricetta,
                 field3: cf
             };
