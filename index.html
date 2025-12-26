@@ -497,12 +497,14 @@
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
 
-                    // Scale up for better OCR
-                    const scale = Math.max(1, 2000 / Math.max(img.width, img.height));
+                    // Scale up MORE for better OCR on small text (NRE codes)
+                    const scale = Math.max(2, 3000 / Math.max(img.width, img.height));
                     canvas.width = img.width * scale;
                     canvas.height = img.height * scale;
 
-                    // Draw image
+                    // Draw image with high quality
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
                     // Get image data for processing
@@ -514,16 +516,16 @@
                         // Grayscale
                         const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
 
-                        // Increase contrast
-                        const contrast = 1.5;
+                        // Increase contrast MORE
+                        const contrast = 2.0;
                         const factor = (259 * (contrast * 100 + 255)) / (255 * (259 - contrast * 100));
                         let newGray = factor * (gray - 128) + 128;
 
                         // Clamp values
                         newGray = Math.max(0, Math.min(255, newGray));
 
-                        // Apply threshold for cleaner text
-                        const threshold = newGray > 140 ? 255 : 0;
+                        // Apply threshold for cleaner text (lower threshold to catch more dark pixels)
+                        const threshold = newGray > 120 ? 255 : 0;
 
                         data[i] = threshold;
                         data[i + 1] = threshold;
@@ -760,11 +762,28 @@
 
             // FALLBACK: If asterisk matching didn't find all codes, try direct pattern matching
             if (!nre) {
-                const nreMatch = cleanText.match(/(\d{4,5}[A-Z])/);
-                if (nreMatch) nre = nreMatch[1];
+                // Try multiple NRE patterns - OCR might misread
+                const nrePatterns = [
+                    /(\d{4,5}[A-Z])/,           // Standard: 1900A
+                    /(\d{3,4}[A-Z]\d?)/,        // Variations
+                    /([0-9O]{3,5}[A-Z])/,       // O instead of 0
+                ];
+                for (const pattern of nrePatterns) {
+                    const nreMatch = cleanText.match(pattern);
+                    if (nreMatch) {
+                        nre = nreMatch[1].replace(/O/g, '0');
+                        break;
+                    }
+                }
             }
             if (!ricetta) {
-                const ricettaMatch = cleanText.match(/(\d{10})/);
+                // 10 digits - might have spaces or O instead of 0
+                let ricettaMatch = cleanText.match(/(\d{10})/);
+                if (!ricettaMatch) {
+                    // Try with possible O→0 replacements
+                    const tempText = cleanText.replace(/O/g, '0');
+                    ricettaMatch = tempText.match(/(\d{10})/);
+                }
                 if (ricettaMatch) ricetta = ricettaMatch[1];
             }
             if (!cf) {
