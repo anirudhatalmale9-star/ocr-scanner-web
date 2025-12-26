@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Scanner Ricetta</title>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <!-- ML Kit for native apps, Tesseract.js fallback for web -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         * {
@@ -471,7 +472,22 @@
     </div>
 
     <script>
-        // Tesseract.js worker (loaded once, reused)
+        // Check if running in Capacitor native app
+        const isNativeApp = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform && Capacitor.isNativePlatform();
+
+        // ML Kit Text Recognition (for native apps)
+        let MlKitTextRecognition = null;
+        if (isNativeApp && typeof Capacitor !== 'undefined') {
+            // Import ML Kit plugin dynamically for native apps
+            import('@pantrist/capacitor-plugin-ml-kit-text-recognition').then(module => {
+                MlKitTextRecognition = module.MlKitTextRecognition;
+                console.log('ML Kit loaded for native app');
+            }).catch(err => {
+                console.log('ML Kit not available, using Tesseract.js fallback');
+            });
+        }
+
+        // Tesseract.js worker (fallback for web)
         let tesseractWorker = null;
 
         // Initialize Tesseract worker
@@ -800,25 +816,45 @@
             };
         }
 
-        // Process image with Tesseract.js (100% local - no external API)
+        // Process image with ML Kit (native) or Tesseract.js (web) - 100% local
         async function processImage() {
             if (!currentImageSrc) return;
 
             loading.classList.add('active');
             document.querySelector('.loading-text').textContent = 'Caricamento OCR...';
 
+            let text = '';
+
             try {
-                // Initialize Tesseract worker
-                const worker = await initTesseract();
+                // Try ML Kit first (native apps - more accurate)
+                if (isNativeApp && MlKitTextRecognition) {
+                    console.log('Using ML Kit (native, on-device)');
+                    document.querySelector('.loading-text').textContent = 'Riconoscimento testo...';
 
-                // Preprocess image for better accuracy
-                document.querySelector('.loading-text').textContent = 'Elaborazione immagine...';
-                const processedImage = await preprocessImage(currentImageSrc);
+                    // ML Kit accepts base64 image
+                    const base64Data = currentImageSrc.replace(/^data:image\/\w+;base64,/, '');
+                    const result = await MlKitTextRecognition.detectText({
+                        image: base64Data
+                    });
 
-                // Perform OCR
-                const { data: { text } } = await worker.recognize(processedImage);
+                    text = result.text || '';
+                    console.log('ML Kit Result:', text);
+                } else {
+                    // Fallback to Tesseract.js for web
+                    console.log('Using Tesseract.js (web fallback)');
 
-                console.log('Tesseract Result:', text);
+                    // Initialize Tesseract worker
+                    const worker = await initTesseract();
+
+                    // Preprocess image for better accuracy
+                    document.querySelector('.loading-text').textContent = 'Elaborazione immagine...';
+                    const processedImage = await preprocessImage(currentImageSrc);
+
+                    // Perform OCR
+                    const result = await worker.recognize(processedImage);
+                    text = result.data.text;
+                    console.log('Tesseract Result:', text);
+                }
 
                 const fields = extractFields(text);
 
